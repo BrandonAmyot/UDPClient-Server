@@ -9,6 +9,16 @@ import java.nio.channels.DatagramChannel;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class UDPServer {
+	
+	/*	global handhsake boolean
+	 * 		set to true once ack received from client to allow other packets to be received
+	 * 		if not true reject packets
+	 * 	
+	 * 	drop and delay stuff
+	 * 	
+	 * 	implement handling of get and post
+	 * 
+	 */
 
     private void listenAndServe(int port) throws IOException {
 

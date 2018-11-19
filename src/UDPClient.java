@@ -13,6 +13,12 @@ import static java.nio.channels.SelectionKey.OP_READ;
 
 public class UDPClient {
 
+	/*
+	 * 	fix payload stuff
+	 * 	implement window stuff (global window variables to track position -- STOP after a set number???)
+	 * 	drop and delay
+	 */
+	
     private static void runClient(SocketAddress routerAddr, InetSocketAddress serverAddr) throws IOException {
         try(DatagramChannel channel = DatagramChannel.open()){
             	
