@@ -41,12 +41,14 @@ public class UDPServer {
                 buf.flip();
                 
             	if(packet.getType() == 2 && packet.getSequenceNumber() == 0) {
+            		System.out.println("SYN received");
             		Packet resp = packet.toBuilder()
             				.setType(3)
             				.create();
             		channel.send(resp.toBuffer(), router);
             	}
             	else if(packet.getType() == 0 && packet.getSequenceNumber() == 0) {
+            		System.out.println("ACK received");
             		handshake = true;
             	}
             }

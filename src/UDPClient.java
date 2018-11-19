@@ -107,6 +107,7 @@ public class UDPClient {
             System.out.println("Router: " + router);
             
             if(resp.getType() == 3 && resp.getSequenceNumber() == 0) { // is sequence number always 0 during handshake?
+            	System.out.println("SYN-ACK received");
             	Packet packet = new Packet.Builder()
                         .setType(0)
                         .setSequenceNumber(0)
