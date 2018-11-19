@@ -27,8 +27,17 @@ public class UDPServer {
                 buf.flip();
                 Packet packet = Packet.fromBuffer(buf);
                 buf.flip();
-
+                
+                
                 String payload = new String(packet.getPayload(), UTF_8);
+                
+                if(packet.getType() == 2 && packet.getSequenceNumber() == 0) {
+                	Packet resp = packet.toBuilder()
+                            .setType(3)
+                            .create();
+                    channel.send(resp.toBuffer(), router);
+                }
+                
                 System.out.println("Packet: " + packet);
                 System.out.println("Payload: " + payload);
                 System.out.println("Router: " + router);
