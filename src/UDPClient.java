@@ -23,10 +23,12 @@ public class UDPClient {
         try(DatagramChannel channel = DatagramChannel.open()){
             	
         	if(!handshake(channel, routerAddr, serverAddr)) {
-        		System.out.println("Handshake failed!");
-        		// quit
+        		System.out.println("Handshake failed! \nProgram terminating...");
+        		return;
         	}
-        	System.out.println("Handshake success!");
+        	else {
+        		System.out.println("Handshake success!");        		
+        	}
         	
         	String msg = "Hello World";
             Packet p = new Packet.Builder()
@@ -104,7 +106,7 @@ public class UDPClient {
             System.out.println("Packet: " + resp);
             System.out.println("Router: " + router);
             
-            if(resp.getType() == 3 && resp.getSequenceNumber() == 0) { // is sequence number always 0 during handshake
+            if(resp.getType() == 3 && resp.getSequenceNumber() == 0) { // is sequence number always 0 during handshake?
             	Packet packet = new Packet.Builder()
                         .setType(0)
                         .setSequenceNumber(0)
@@ -119,9 +121,6 @@ public class UDPClient {
             else {
             	return false;
             }
-//            String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
-//            System.out.println("Payload: " + payload);
-    	
 	}
 
 	public static void main(String[] args) throws IOException {
