@@ -39,7 +39,7 @@ public class UDPClient {
 //        		System.out.println("Handshake success!");        		
 //        	}
         	
-        	while(true) {
+        	while(currentSequenceNumber < 50) {
         		for(int i = 0; i < packetArr.length; i++) {
         			if(packetArr[i] == null) {
         				String msg = "Hello from packet " + currentSequenceNumber;
@@ -57,7 +57,7 @@ public class UDPClient {
         		// send all packets
         		for (Packet packet : packetArr) {
 					channel.send(packet.toBuffer(), routerAddr);
-					System.out.println("Sending \"" + packet.getPayload() + "\" to router at " + routerAddr);
+					System.out.println("Sending \"" + packet.getPayload().toString() + "\" to router at " + routerAddr);
 				}
         		
         		
@@ -96,7 +96,7 @@ public class UDPClient {
 	                				packetArr[i] = null;
 	                		}
 	                		else if(resp.getType() == 1) {
-	        					channel.send(packetArr[(int)resp.getSequenceNumber()].toBuffer(), routerAddr);
+	        					channel.send(packetArr[(int)resp.getSequenceNumber()%4].toBuffer(), routerAddr);
 	                		}
         				}
                 		keys.clear();
@@ -104,15 +104,15 @@ public class UDPClient {
         			}
         		}
         		
-        		// We just want a single response.
-        		ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_LEN);
-        		SocketAddress router = channel.receive(buf);
-        		buf.flip();
-        		Packet resp = Packet.fromBuffer(buf);
-        		System.out.println("Packet: " + resp);
-        		System.out.println("Router: " + router);
-        		String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
-        		System.out.println("Payload: " + payload);
+//        		// We just want a single response.
+//        		ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_LEN);
+//        		SocketAddress router = channel.receive(buf);
+//        		buf.flip();
+//        		Packet resp = Packet.fromBuffer(buf);
+//        		System.out.println("Packet: " + resp);
+//        		System.out.println("Router: " + router);
+//        		String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
+//        		System.out.println("Payload: " + payload);
         		
         		keys.clear();
         		

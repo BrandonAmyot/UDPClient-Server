@@ -63,7 +63,7 @@ public class UDPServer {
 //        		}
 //            }
             
-            while(true/*handshakeComplete*/) {
+            while(true/*handshakeComplete*/) { // ignore handshake for now
                 buf.clear();
                 SocketAddress router = channel.receive(buf);
 
