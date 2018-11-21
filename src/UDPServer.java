@@ -31,29 +31,29 @@ public class UDPServer {
                     .allocate(Packet.MAX_LEN)
                     .order(ByteOrder.BIG_ENDIAN);
 
-            while(!handshake) {
-                buf.clear();
-                SocketAddress router = channel.receive(buf);
-
-                // Parse a packet from the received raw data.
-                buf.flip();
-                Packet packet = Packet.fromBuffer(buf);
-                buf.flip();
-                
-            	if(packet.getType() == 2 && packet.getSequenceNumber() == 0) {
-            		System.out.println("SYN received");
-            		Packet resp = packet.toBuilder()
-            				.setType(3)
-            				.create();
-            		channel.send(resp.toBuffer(), router);
-            	}
-            	else if(packet.getType() == 0 && packet.getSequenceNumber() == 0) {
-            		System.out.println("ACK received");
-            		handshake = true;
-            	}
-            }
+//            while(!handshake) {
+//                buf.clear();
+//                SocketAddress router = channel.receive(buf);
+//
+//                // Parse a packet from the received raw data.
+//                buf.flip();
+//                Packet packet = Packet.fromBuffer(buf);
+//                buf.flip();
+//                
+//            	if(packet.getType() == 2 && packet.getSequenceNumber() == 0) {
+//            		System.out.println("SYN received");
+//            		Packet resp = packet.toBuilder()
+//            				.setType(3)
+//            				.create();
+//            		channel.send(resp.toBuffer(), router);
+//            	}
+//            	else if(packet.getType() == 0 && packet.getSequenceNumber() == 0) {
+//            		System.out.println("ACK received");
+//            		handshake = true;
+//            	}
+//            }
             
-            while(handshake) {
+            while(true/*handshake*/) {
                 buf.clear();
                 SocketAddress router = channel.receive(buf);
 

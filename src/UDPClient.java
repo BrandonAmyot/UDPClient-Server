@@ -21,14 +21,17 @@ public class UDPClient {
 	
     private static void runClient(SocketAddress routerAddr, InetSocketAddress serverAddr) throws IOException {
         try(DatagramChannel channel = DatagramChannel.open()){
-            	
-        	if(!handshake(channel, routerAddr, serverAddr)) {
-        		System.out.println("Handshake failed! \nProgram terminating...");
-        		return;
-        	}
-        	else {
-        		System.out.println("Handshake success!");        		
-        	}
+            
+        	/*
+        	 *  commented out for easy testing
+        	 */
+//        	if(!handshake(channel, routerAddr, serverAddr)) {
+//        		System.out.println("Handshake failed! \nProgram terminating...");
+//        		return;
+//        	}
+//        	else {
+//        		System.out.println("Handshake success!");        		
+//        	}
         	
         	String msg = "Hello World";
             Packet p = new Packet.Builder()
@@ -99,9 +102,15 @@ public class UDPClient {
             selector.select(5000);
 
             Set<SelectionKey> keys = selector.selectedKeys();
-            if(keys.isEmpty()){
-                System.out.println("No response after timeout");
-                return false;
+            while(true) {            	
+            	if(keys.isEmpty()){
+            		System.out.println("No response after timeout");
+            		channel.send(p.toBuffer(), routerAddr);
+            		selector.select(5000);
+            	}
+            	else {
+            		break;
+            	}
             }
             
             // We just want a single response.
