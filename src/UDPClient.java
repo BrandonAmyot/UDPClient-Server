@@ -47,12 +47,18 @@ public class UDPClient {
             Selector selector = Selector.open();
             channel.register(selector, OP_READ);
             System.out.println("Waiting for the response");
-            selector.select(5000);
-
+            
             Set<SelectionKey> keys = selector.selectedKeys();
-            if(keys.isEmpty()){
-                System.out.println("No response after timeout");
-                return;
+            selector.select(5000);
+            while(true) {            	
+            	if(keys.isEmpty()){
+            		System.out.println("No response after timeout");
+            		channel.send(p.toBuffer(), routerAddr);
+            		selector.select(5000);
+            	}
+            	else {
+            		break;
+            	}
             }
 
             // We just want a single response.
