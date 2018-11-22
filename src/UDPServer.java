@@ -5,12 +5,18 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.util.Set;
 
+import static java.nio.channels.SelectionKey.OP_READ;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class UDPServer {
 	
-	private boolean handshake = false;
+	private boolean handshakeComplete = false;
+	private boolean SYNReceived = false;
+	private int currentSequenceNumber = 0;
 	
 	/*	global handhsake boolean
 	 * 		set to true once ack received from client to allow other packets to be received
@@ -26,34 +32,38 @@ public class UDPServer {
 
         try (DatagramChannel channel = DatagramChannel.open()) {
             channel.bind(new InetSocketAddress(port));
-            System.out.println("EchoServer is listening at " + channel.getLocalAddress());
+            System.out.println("UDPServer is listening at " + channel.getLocalAddress());
             ByteBuffer buf = ByteBuffer
                     .allocate(Packet.MAX_LEN)
                     .order(ByteOrder.BIG_ENDIAN);
 
-            while(!handshake) {
-                buf.clear();
-                SocketAddress router = channel.receive(buf);
-
-                // Parse a packet from the received raw data.
-                buf.flip();
-                Packet packet = Packet.fromBuffer(buf);
-                buf.flip();
-                
-            	if(packet.getType() == 2 && packet.getSequenceNumber() == 0) {
-            		System.out.println("SYN received");
-            		Packet resp = packet.toBuilder()
-            				.setType(3)
-            				.create();
-            		channel.send(resp.toBuffer(), router);
-            	}
-            	else if(packet.getType() == 0 && packet.getSequenceNumber() == 0) {
-            		System.out.println("ACK received");
-            		handshake = true;
-            	}
-            }
+//            while(!handshakeComplete) {
+//                buf.clear();
+//                SocketAddress router = channel.receive(buf);
+//
+//                // Parse a packet from the received raw data.
+//                buf.flip();
+//                Packet packet = Packet.fromBuffer(buf);
+//                buf.flip();
+//                
+//            	if(packet.getType() == 2 && packet.getSequenceNumber() == 0) {
+//            		System.out.println("SYN received");
+//            		Packet resp = packet.toBuilder()
+//            				.setType(3)
+//            				.create();
+//            		channel.send(resp.toBuffer(), router);
+//            	}
+//            	else if(packet.getType() == 1 && packet.getSequenceNumber() == 0) {
+//            		System.out.println("ACK received");
+//            		handshake = true;
+//            	}
+//            	else if(packet.getType() == 1 && packet.getSequenceNumber() != 0 && SYNReceived){  // DO SOMETHING WITH IT?
+//            		handshakeComplete = true;
+//            		break;
+//        		}
+//            }
             
-            while(handshake) {
+            while(true/*handshakeComplete*/) { // ignore handshake for now
                 buf.clear();
                 SocketAddress router = channel.receive(buf);
 
@@ -62,21 +72,23 @@ public class UDPServer {
                 Packet packet = Packet.fromBuffer(buf);
                 buf.flip();
                 
-                
+                // output information about packet
                 String payload = new String(packet.getPayload(), UTF_8);
-                
-                	System.out.println("Packet: " + packet);
-                	System.out.println("Payload: " + payload);
-                	System.out.println("Router: " + router);
-                	
-                	// Send the response to the router not the client.
-                	// The peer address of the packet is the address of the client already.
-                	// We can use toBuilder to copy properties of the current packet.
-                	// This demonstrate how to create a new packet from an existing packet.
-                	Packet resp = packet.toBuilder()
-                			.setPayload(payload.getBytes())
-                			.create();
-                	channel.send(resp.toBuffer(), router);             
+            	System.out.println("Packet: " + packet);
+            	System.out.println("Payload: " + payload);
+            	System.out.println("Router: " + router);
+            	
+        		// Send the response to the router not the client.
+        		// The peer address of the packet is the address of the client already.
+        		// We can use toBuilder to copy properties of the current packet.
+        		// This demonstrate how to create a new packet from an existing packet.
+        		Packet resp = packet.toBuilder()
+        				.setType(1)
+//        				.setSequenceNumber(currentSequenceNumber)
+        				.setPayload(payload.getBytes())
+        				.create();
+        		channel.send(resp.toBuffer(), router);
+//        		currentSequenceNumber++;
             }
         }
     }
