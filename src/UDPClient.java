@@ -39,7 +39,7 @@ public class UDPClient {
 //        		System.out.println("Handshake success!");        		
 //        	}
         	
-        	while(currentSequenceNumber < 50) {
+        	while(currentSequenceNumber < 49) {
         		// fill array
         		for(int i = 0; i < packetArr.length; i++) {
         			if(packetArr[i] == null) {
@@ -70,14 +70,13 @@ public class UDPClient {
         		
         		Set<SelectionKey> keys = selector.selectedKeys();
         		selector.select(5000);
-        		while(true) {            	
+        		while(currentRespSeqNumber != currentSequenceNumber) {
         			if(keys.isEmpty()){
-        				System.out.println("No response after timeout");
-        				for (Packet packet : packetArr) {
-        					channel.send(packet.toBuffer(), routerAddr);
-        					//System.out.println("Sending \"" + packet.getPayload() + "\" to router at " + routerAddr);
-        				}
-        				selector.select(5000);
+        				System.out.println("No response after timeout");       						
+	        				for (Packet packet : packetArr) {
+	        						channel.send(packet.toBuffer(), routerAddr);
+	        				}
+	        				selector.select(5000);
         			}
         			else {
         				// get all responses
@@ -93,10 +92,10 @@ public class UDPClient {
 	                		
 	                		if(resp.getType() == 1 && resp.getSequenceNumber() <= currentRespSeqNumber) {
 	                			currentRespSeqNumber = resp.getSequenceNumber() + 1;
-	                			packetArr[(int)(resp.getSequenceNumber() % windowSize)] = null;
+	                			packetArr[(int)(resp.getSequenceNumber() % 4)] = null;
 	                		}
 	                		else if(resp.getType() == 0) {
-	        					channel.send(packetArr[(int)(resp.getSequenceNumber() % windowSize)].toBuffer(), routerAddr);
+	        					channel.send(packetArr[(int)(resp.getSequenceNumber() % 4)].toBuffer(), routerAddr);
 	                		}
 	                		buf.clear();
         				} 
