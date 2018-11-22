@@ -20,11 +20,13 @@ import org.apache.commons.lang3.StringUtils;
 import static java.nio.channels.SelectionKey.OP_READ;
 
 public class UDPClient {
+	
 	/*
 	 * 	fix payload stuff
 	 * 	implement window stuff (global window variables to track position -- STOP after a set number???)
 	 * 	drop and delay
 	 */
+	private static String fileName;
 	
     private static void runClient(SocketAddress routerAddr, InetSocketAddress serverAddr) throws IOException {
         try(DatagramChannel channel = DatagramChannel.open()){
@@ -38,17 +40,42 @@ public class UDPClient {
         	}
         	
         	String userLong = "httpUDP get /";
+//        	String userLong = "httpUDP get /foo";
+//        	String userLong = "httpUDP get /boo";
+//        	String userLong = "httpUDP post /bar";
         	
+        	String tempFileName = StringUtils.substringAfter(userLong, "/");
+    		if(tempFileName.equals("")) {
+    			fileName = tempFileName;
+    		}
+    		else {
+    			fileName = tempFileName + ".txt";
+    		}
+    		
+    		String tempLong = StringUtils.substringAfter(userLong, " ");
+    		String httpMethod = StringUtils.substringBefore(tempLong, " ");
+    		
+    		if(fileName.equals("")) {
+
+    		}
+    		else if(httpMethod.equals("get")) {
+
+    		}
+    		else if(httpMethod.equals("post")) {
+
+    		}
+        	
+        	String msg = "hello";
             Packet p = new Packet.Builder()
                     .setType(0)
                     .setSequenceNumber(1L)
                     .setPortNumber(serverAddr.getPort())
                     .setPeerAddress(serverAddr.getAddress())
-                    .setPayload(userLong.getBytes())
+                    .setPayload(msg.getBytes())
                     .create();
             channel.send(p.toBuffer(), routerAddr);
 
-            System.out.println("Sending \"" + userLong + "\" to router at " + routerAddr);
+            System.out.println("Sending \"" + msg + "\" to router at " + routerAddr);
 
             // Try to receive a packet within timeout.
             channel.configureBlocking(false);
