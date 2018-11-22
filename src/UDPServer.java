@@ -84,7 +84,7 @@ public class UDPServer {
         		// This demonstrate how to create a new packet from an existing packet.
         		Packet resp = packet.toBuilder()
         				.setType(1)
-        				.setSequenceNumber(currentSequenceNumber)
+//        				.setSequenceNumber(currentSequenceNumber)
         				.setPayload(payload.getBytes())
         				.create();
         		channel.send(resp.toBuffer(), router);

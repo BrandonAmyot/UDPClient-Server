@@ -40,6 +40,7 @@ public class UDPClient {
 //        	}
         	
         	while(currentSequenceNumber < 50) {
+        		// fill array
         		for(int i = 0; i < packetArr.length; i++) {
         			if(packetArr[i] == null) {
         				String msg = "Hello from packet " + currentSequenceNumber;
@@ -57,7 +58,7 @@ public class UDPClient {
         		// send all packets
         		for (Packet packet : packetArr) {
 					channel.send(packet.toBuffer(), routerAddr);
-					System.out.println("Sending \"" + packet.getPayload().toString() + "\" to router at " + routerAddr);
+					System.out.println("Sending \"" + packet.getSequenceNumber() + "\" to router at " + routerAddr);
 				}
         		
         		
@@ -65,7 +66,7 @@ public class UDPClient {
         		channel.configureBlocking(false);
         		Selector selector = Selector.open();
         		channel.register(selector, OP_READ);
-        		System.out.println("Waiting for the response");
+        		System.out.println("Waiting for the responses");
         		
         		Set<SelectionKey> keys = selector.selectedKeys();
         		selector.select(5000);
@@ -74,14 +75,14 @@ public class UDPClient {
         				System.out.println("No response after timeout");
         				for (Packet packet : packetArr) {
         					channel.send(packet.toBuffer(), routerAddr);
-        					System.out.println("Sending \"" + packet.getPayload() + "\" to router at " + routerAddr);
+        					//System.out.println("Sending \"" + packet.getPayload() + "\" to router at " + routerAddr);
         				}
         				selector.select(5000);
         			}
         			else {
         				// get all responses
         				ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_LEN);
-        				SocketAddress router;/* = channel.receive(buf);*/
+        				SocketAddress router;
         				while((router = channel.receive(buf)) != null) {
 	                		buf.flip();
 	                		Packet resp = Packet.fromBuffer(buf);
@@ -90,17 +91,15 @@ public class UDPClient {
 	                		String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
 	                		System.out.println("Payload: " + payload);
 	                		
-	                		if(resp.getType() == 0 && resp.getSequenceNumber() < currentRespSeqNumber) {
-	                			currentRespSeqNumber = resp.getSequenceNumber();
-	                			for(int i = 0; i < currentRespSeqNumber; i++)
-	                				packetArr[i] = null;
+	                		if(resp.getType() == 1 && resp.getSequenceNumber() <= currentRespSeqNumber) {
+	                			currentRespSeqNumber = resp.getSequenceNumber() + 1;
+	                			packetArr[(int)(resp.getSequenceNumber() % windowSize)] = null;
 	                		}
-	                		else if(resp.getType() == 1) {
-	        					channel.send(packetArr[(int)resp.getSequenceNumber()%4].toBuffer(), routerAddr);
+	                		else if(resp.getType() == 0) {
+	        					channel.send(packetArr[(int)(resp.getSequenceNumber() % windowSize)].toBuffer(), routerAddr);
 	                		}
-        				}
-                		keys.clear();
-                		break;
+	                		buf.clear();
+        				} 
         			}
         		}
         		
@@ -114,7 +113,7 @@ public class UDPClient {
 //        		String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
 //        		System.out.println("Payload: " + payload);
         		
-        		keys.clear();
+//        		keys.clear();
         		
         	}
         }
