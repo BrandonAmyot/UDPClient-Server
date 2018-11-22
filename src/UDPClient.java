@@ -85,7 +85,7 @@ public class UDPClient {
 	        				selector.select(5000);
         			}
         			else {
-        				// get all responses
+        				// get all responses in the buffer
         				ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_LEN);
         				SocketAddress router;
         				while((router = channel.receive(buf)) != null) {
@@ -109,19 +109,6 @@ public class UDPClient {
         				} 
         			}
         		}
-        		
-//        		// We just want a single response.
-//        		ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_LEN);
-//        		SocketAddress router = channel.receive(buf);
-//        		buf.flip();
-//        		Packet resp = Packet.fromBuffer(buf);
-//        		System.out.println("Packet: " + resp);
-//        		System.out.println("Router: " + router);
-//        		String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
-//        		System.out.println("Payload: " + payload);
-        		
-//        		keys.clear();
-        		
         	}
         }
     }
