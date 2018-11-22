@@ -37,33 +37,33 @@ public class UDPServer {
                     .allocate(Packet.MAX_LEN)
                     .order(ByteOrder.BIG_ENDIAN);
 
-//            while(!handshakeComplete) {
-//                buf.clear();
-//                SocketAddress router = channel.receive(buf);
-//
-//                // Parse a packet from the received raw data.
-//                buf.flip();
-//                Packet packet = Packet.fromBuffer(buf);
-//                buf.flip();
-//                
-//            	if(packet.getType() == 2 && packet.getSequenceNumber() == 0) {
-//            		System.out.println("SYN received");
-//            		Packet resp = packet.toBuilder()
-//            				.setType(3)
-//            				.create();
-//            		channel.send(resp.toBuffer(), router);
-//            	}
-//            	else if(packet.getType() == 1 && packet.getSequenceNumber() == 0) {
-//            		System.out.println("ACK received");
-//            		handshake = true;
-//            	}
-//            	else if(packet.getType() == 1 && packet.getSequenceNumber() != 0 && SYNReceived){  // DO SOMETHING WITH IT?
-//            		handshakeComplete = true;
-//            		break;
-//        		}
-//            }
+            while(!handshakeComplete) {
+                buf.clear();
+                SocketAddress router = channel.receive(buf);
+
+                // Parse a packet from the received raw data.
+                buf.flip();
+                Packet packet = Packet.fromBuffer(buf);
+                buf.flip();
+                
+            	if(packet.getType() == 2 && packet.getSequenceNumber() == 0) {
+            		System.out.println("SYN received");
+            		Packet resp = packet.toBuilder()
+            				.setType(3)
+            				.create();
+            		channel.send(resp.toBuffer(), router);
+            	}
+            	else if(packet.getType() == 1 && packet.getSequenceNumber() == 0) {
+            		System.out.println("ACK received");
+            		handshakeComplete = true;
+            	}
+            	else if(packet.getType() == 1 && packet.getSequenceNumber() != 0 && SYNReceived){  // DO SOMETHING WITH IT?
+            		handshakeComplete = true;
+            		break;
+        		}
+            }
             
-            while(true/*handshakeComplete*/) { // ignore handshake for now
+            while(handshakeComplete) {
                 buf.clear();
                 SocketAddress router = channel.receive(buf);
 

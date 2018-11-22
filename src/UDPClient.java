@@ -20,27 +20,20 @@ public class UDPClient {
 	private static long maxSeqNum = -1;
 	private static Packet[] packetArr = new Packet[(int) (0.5*windowSize)];
 	
-	/*
-	 * 	fix payload stuff
-	 * 	implement window stuff (global window variables to track position -- STOP after a set number???)
-	 * 	drop and delay
-	 */
 	
     private static void runClient(SocketAddress routerAddr, InetSocketAddress serverAddr) throws IOException {
         try(DatagramChannel channel = DatagramChannel.open()){
             
-        	/*
-        	 *  commented out for easy testing
-        	 */
-//        	if(!handshake(channel, routerAddr, serverAddr)) {
-//        		System.out.println("Handshake failed! \nProgram terminating...");
-//        		return;
-//        	}
-//        	else {
-//        		System.out.println("Handshake success!");        		
-//        	}
+
+        	if(!handshake(channel, routerAddr, serverAddr)) {
+        		System.out.println("Handshake failed! \nProgram terminating...");
+        		return;
+        	}
+        	else {
+        		System.out.println("Handshake success!");        		
+        	}
         	
-        	while(currentSequenceNumber < 100) {
+        	while(currentSequenceNumber < 30) {
         		maxSeqNum += 4;
         		// fill array
         		for(int i = 0; i < packetArr.length; i++) {
@@ -71,7 +64,7 @@ public class UDPClient {
         		System.out.println("Waiting for the responses");
         		
         		Set<SelectionKey> keys = selector.selectedKeys();
-        		selector.select(5000);
+        		selector.select(10000);
         		while(minSeqNum < currentSequenceNumber) {
         			if(keys.isEmpty()){
         				System.out.println("No response after timeout");       						
@@ -84,7 +77,7 @@ public class UDPClient {
 	        						System.out.println("Resending Packet \"" + packetArr[i].getSequenceNumber() + "\" to router at " + routerAddr);	        						
 	        					}
 	        				}
-	        				selector.select(5000);
+	        				selector.select(10000);
         			}
         			else {
         				// get all responses in the buffer
@@ -100,9 +93,6 @@ public class UDPClient {
 	                			String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
 	                			System.out.println("Payload: " + payload);
 	                			
-//	                			if(resp.getSequenceNumber() == minSeqNum) {
-//	                				minSeqNum++;	                				
-//	                			}
 	                			packetArr[(int)(resp.getSequenceNumber() % 4)] = null;
 	                			minSeqNum++;
 	                		}
