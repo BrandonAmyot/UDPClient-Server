@@ -58,7 +58,7 @@ public class UDPClient {
         		// send all packets
         		for (Packet packet : packetArr) {
 					channel.send(packet.toBuffer(), routerAddr);
-					System.out.println("Sending \"" + packet.getSequenceNumber() + "\" to router at " + routerAddr);
+					System.out.println("Sending Packet \"" + packet.getSequenceNumber() + "\" to router at " + routerAddr);
 				}
         		
         		
@@ -73,8 +73,14 @@ public class UDPClient {
         		while(currentRespSeqNumber != currentSequenceNumber) {
         			if(keys.isEmpty()){
         				System.out.println("No response after timeout");       						
-	        				for (Packet packet : packetArr) {
-	        						channel.send(packet.toBuffer(), routerAddr);
+	        				for (int i = 0; i < packetArr.length; i++) {
+	        					if(packetArr[i] == null) {
+	        						
+	        					}
+	        					else {
+	        						channel.send(packetArr[i].toBuffer(), routerAddr);
+	        						System.out.println("Resending Packet \"" + packetArr[i].getSequenceNumber() + "\" to router at " + routerAddr);	        						
+	        					}
 	        				}
 	        				selector.select(5000);
         			}
@@ -83,20 +89,22 @@ public class UDPClient {
         				ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_LEN);
         				SocketAddress router;
         				while((router = channel.receive(buf)) != null) {
-	                		buf.flip();
-	                		Packet resp = Packet.fromBuffer(buf);
-	                		System.out.println("Packet: " + resp);
-	                		System.out.println("Router: " + router);
-	                		String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
-	                		System.out.println("Payload: " + payload);
+        					buf.flip();
+        					Packet resp = Packet.fromBuffer(buf);
 	                		
-	                		if(resp.getType() == 1 && resp.getSequenceNumber() <= currentRespSeqNumber) {
-	                			currentRespSeqNumber = resp.getSequenceNumber() + 1;
+	                		if(resp.getType() == 1 && resp.getSequenceNumber() <= currentSequenceNumber && packetArr[(int)(resp.getSequenceNumber() % 4)] != null) {
+	                			System.out.println("Packet: " + resp);
+	                			System.out.println("Router: " + router);
+	                			String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
+	                			System.out.println("Payload: " + payload);
+	                			
+	                			currentRespSeqNumber++;
 	                			packetArr[(int)(resp.getSequenceNumber() % 4)] = null;
 	                		}
 	                		else if(resp.getType() == 0) {
 	        					channel.send(packetArr[(int)(resp.getSequenceNumber() % 4)].toBuffer(), routerAddr);
 	                		}
+	                		keys.clear();
 	                		buf.clear();
         				} 
         			}

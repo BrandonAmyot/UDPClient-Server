@@ -32,7 +32,7 @@ public class UDPServer {
 
         try (DatagramChannel channel = DatagramChannel.open()) {
             channel.bind(new InetSocketAddress(port));
-            System.out.println("EchoServer is listening at " + channel.getLocalAddress());
+            System.out.println("UDPServer is listening at " + channel.getLocalAddress());
             ByteBuffer buf = ByteBuffer
                     .allocate(Packet.MAX_LEN)
                     .order(ByteOrder.BIG_ENDIAN);
@@ -88,7 +88,7 @@ public class UDPServer {
         				.setPayload(payload.getBytes())
         				.create();
         		channel.send(resp.toBuffer(), router);
-        		currentSequenceNumber++;                		
+//        		currentSequenceNumber++;
             }
         }
     }
