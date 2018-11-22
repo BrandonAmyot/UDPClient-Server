@@ -16,7 +16,8 @@ public class UDPClient {
 	private static double k = 3.0;
 	private static double windowSize = Math.pow(2.0,k);
 	private static long currentSequenceNumber = 0;
-	private static long currentRespSeqNumber = 0;
+	private static long minSeqNum = 0;
+	private static long maxSeqNum = 3;
 	private static Packet[] packetArr = new Packet[(int) (0.5*windowSize)];
 	
 	/*
@@ -39,7 +40,7 @@ public class UDPClient {
 //        		System.out.println("Handshake success!");        		
 //        	}
         	
-        	while(currentSequenceNumber < 49) {
+        	while(currentSequenceNumber < 100) {
         		// fill array
         		for(int i = 0; i < packetArr.length; i++) {
         			if(packetArr[i] == null) {
@@ -70,7 +71,7 @@ public class UDPClient {
         		
         		Set<SelectionKey> keys = selector.selectedKeys();
         		selector.select(5000);
-        		while(currentRespSeqNumber != currentSequenceNumber) {
+        		while(minSeqNum < currentSequenceNumber) {
         			if(keys.isEmpty()){
         				System.out.println("No response after timeout");       						
 	        				for (int i = 0; i < packetArr.length; i++) {
@@ -92,14 +93,17 @@ public class UDPClient {
         					buf.flip();
         					Packet resp = Packet.fromBuffer(buf);
 	                		
-	                		if(resp.getType() == 1 && resp.getSequenceNumber() <= currentSequenceNumber && packetArr[(int)(resp.getSequenceNumber() % 4)] != null) {
+	                		if(resp.getType() == 1 && resp.getSequenceNumber() <= maxSeqNum && resp.getSequenceNumber() >= minSeqNum && packetArr[(int)(resp.getSequenceNumber() % 4)] != null) {
 	                			System.out.println("Packet: " + resp);
 	                			System.out.println("Router: " + router);
 	                			String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
 	                			System.out.println("Payload: " + payload);
 	                			
-	                			currentRespSeqNumber++;
+	                			if(resp.getSequenceNumber() == minSeqNum) {
+	                				minSeqNum++;	                				
+	                			}
 	                			packetArr[(int)(resp.getSequenceNumber() % 4)] = null;
+	                			maxSeqNum++;
 	                		}
 	                		else if(resp.getType() == 0) {
 	        					channel.send(packetArr[(int)(resp.getSequenceNumber() % 4)].toBuffer(), routerAddr);
