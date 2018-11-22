@@ -17,7 +17,7 @@ public class UDPClient {
 	private static double windowSize = Math.pow(2.0,k);
 	private static long currentSequenceNumber = 0;
 	private static long minSeqNum = 0;
-	private static long maxSeqNum = 3;
+	private static long maxSeqNum = -1;
 	private static Packet[] packetArr = new Packet[(int) (0.5*windowSize)];
 	
 	/*
@@ -41,6 +41,7 @@ public class UDPClient {
 //        	}
         	
         	while(currentSequenceNumber < 100) {
+        		maxSeqNum += 4;
         		// fill array
         		for(int i = 0; i < packetArr.length; i++) {
         			if(packetArr[i] == null) {
@@ -93,17 +94,17 @@ public class UDPClient {
         					buf.flip();
         					Packet resp = Packet.fromBuffer(buf);
 	                		
-	                		if(resp.getType() == 1 && resp.getSequenceNumber() <= maxSeqNum && resp.getSequenceNumber() >= minSeqNum && packetArr[(int)(resp.getSequenceNumber() % 4)] != null) {
+	                		if(resp.getType() == 1 && resp.getSequenceNumber() <= maxSeqNum && resp.getSequenceNumber() >= maxSeqNum-3 && packetArr[(int)(resp.getSequenceNumber() % 4)] != null) {
 	                			System.out.println("Packet: " + resp);
 	                			System.out.println("Router: " + router);
 	                			String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
 	                			System.out.println("Payload: " + payload);
 	                			
-	                			if(resp.getSequenceNumber() == minSeqNum) {
-	                				minSeqNum++;	                				
-	                			}
+//	                			if(resp.getSequenceNumber() == minSeqNum) {
+//	                				minSeqNum++;	                				
+//	                			}
 	                			packetArr[(int)(resp.getSequenceNumber() % 4)] = null;
-	                			maxSeqNum++;
+	                			minSeqNum++;
 	                		}
 	                		else if(resp.getType() == 0) {
 	        					channel.send(packetArr[(int)(resp.getSequenceNumber() % 4)].toBuffer(), routerAddr);
