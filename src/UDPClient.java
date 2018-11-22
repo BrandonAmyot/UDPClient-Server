@@ -1,12 +1,18 @@
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -14,13 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import static java.nio.channels.SelectionKey.OP_READ;
 
 public class UDPClient {
-	
-	private static boolean getReq = false;
-	private static boolean postReq = false;
-	private static boolean isTextOut = false;
-	private static String outputFileName;
-
-	private static String fileName;
 	/*
 	 * 	fix payload stuff
 	 * 	implement window stuff (global window variables to track position -- STOP after a set number???)
@@ -38,17 +37,18 @@ public class UDPClient {
         		System.out.println("Handshake success!");        		
         	}
         	
-        	String userURL = "httpUDP get /";
+        	String userLong = "httpUDP get /";
+        	
             Packet p = new Packet.Builder()
                     .setType(0)
                     .setSequenceNumber(1L)
                     .setPortNumber(serverAddr.getPort())
                     .setPeerAddress(serverAddr.getAddress())
-                    .setPayload(userURL.getBytes())
+                    .setPayload(userLong.getBytes())
                     .create();
             channel.send(p.toBuffer(), routerAddr);
 
-            System.out.println("Sending \"" + userURL + "\" to router at " + routerAddr);
+            System.out.println("Sending \"" + userLong + "\" to router at " + routerAddr);
 
             // Try to receive a packet within timeout.
             channel.configureBlocking(false);
@@ -132,50 +132,6 @@ public class UDPClient {
             }
 	}
     
-	public static void parseURL(String urlLong) {
-		
-		if(urlLong.matches(".*httpUDP get?.*")) {
-			getReq = true;
-			
-			if(urlLong.matches(".*-o.*")) {
-				isTextOut = true;
-				String temp = StringUtils.substringAfter(urlLong, "-o ");
-				outputFileName = StringUtils.substringBefore(temp, " ");
-			}
-			if(urlLong.matches(".*-v.*")) {
-				Get.setVerbose(true);
-			}
-			if(urlLong.matches(".*-h.*")) {
-				Get.setHeaders(true);
-				Get.addHeaders(urlLong);
-			}
-			return;
-		}
-//		else if(urlLong.matches(".*httpUDP post?.*")) {
-//			postReq = true;
-//			
-//			if(urlLong.matches(".*-o.*")) {
-//				isTextOut = true;
-//				String temp = StringUtils.substringAfter(urlLong, "-o ");
-//				outputFileName = StringUtils.substringBefore(temp, " ");
-//			}
-//			if(urlLong.matches(".*-v.*")) {
-//				Post.setVerbose(true);
-//			}
-//			if(urlLong.matches(".*-h.*")) {
-//				Post.setHeaders(true);
-//				Post.addHeaders(urlLong);
-//			}
-//			if(urlLong.matches(".*-d.*")) {
-//				Post.setInlineData(true);
-//				Post.addData(urlLong);
-//			}
-//			if(urlLong.matches(".*-f.*")) {
-//				Post.setIsFile(true);
-//				Post.readFile(urlLong);
-//			}
-//		}
-	}
 
 	public static void main(String[] args) throws IOException {
         // Router address
